@@ -1,0 +1,8 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: jenkins-openapi
+rules:
+  - nonResourceURLs: ["/openapi/v2"]
+    verbs: ["get"]
+
