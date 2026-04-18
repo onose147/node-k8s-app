@@ -52,12 +52,6 @@ pipeline {
                             --validate=false \
                             -n dev apply -f deployment.yml
 
-                        kubectl --token=\$K8S_TOKEN \
-                            --server=$K8S_SERVER \
-                            --insecure-skip-tls-verify=true \
-                            --validate=false \
-                            -n dev apply -f service.yml
-                    """
                 }
             }
         }
