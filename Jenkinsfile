@@ -9,11 +9,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                  $class: 'GitSCM',
-  branches: [[name: '*/master']],
-  userRemoteConfigs: [[
-    url: 'https://github.com/onose147/node-k8s-app.git',
-    credentialsId: 'github-token'
+                git 'https://github.com/YOUR_GITHUB_REPO/node-k8s-app.git'
             }
         }
 
