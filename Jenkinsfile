@@ -53,13 +53,13 @@ pipeline {
                     variable: 'K8S_TOKEN'
                 )]) {
                     sh """
-                        kubectl --token=\$K8S_TOKEN \
-                            --server=https://$(minikube ip):8443 \
+                        kubectl --token=${K8S_TOKEN} \
+                            --server=https://\$(minikube ip):8443 \
                             --insecure-skip-tls-verify=true \
                             -n dev apply -f deployment.yml
 
-                        kubectl --token=\$K8S_TOKEN \
-                            --server=https://$(minikube ip):8443 \
+                        kubectl --token=${K8S_TOKEN} \
+                            --server=https://\$(minikube ip):8443 \
                             --insecure-skip-tls-verify=true \
                             -n dev apply -f service.yml
                     """
