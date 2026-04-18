@@ -51,7 +51,7 @@ pipeline {
                             --insecure-skip-tls-verify=true \
                             --validate=false \
                             -n dev apply -f deployment.yml
-
+                    """
                 }
             }
         }
