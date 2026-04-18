@@ -9,7 +9,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/YOUR_GITHUB_REPO/node-k8s-app.git'
+                git 'https://github.com/onose147/node-k8s-app.git'
             }
         }
 
@@ -30,7 +30,7 @@ pipeline {
 
         stage('Deploy to Kubernetes') {
             steps {
-                sh 'sed -i "s|onose/node-k8s-app:.*|onose/node-k8s-app:$IMAGE_TAG|g" deployment.yml'
+                sh 'sed -i "s|onose/node-k8s-app:.*|onose147/node-k8s-app:$IMAGE_TAG|g" deployment.yml'
                 sh 'kubectl apply -f deployment.yml'
             }
         }
