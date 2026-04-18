@@ -2,10 +2,10 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB_CREDENTIALS   = 'dockerhub'
-        GITHUB_CREDENTIALS      = 'github-token'
-        DOCKERHUB_REPO          = 'onose147/node-k8s-app'
-        KUBECONFIG_CREDENTIALS  = 'kubeconfig'
+        DOCKERHUB_CREDENTIALS = 'dockerhub'
+        GITHUB_CREDENTIALS    = 'github-token'
+        K8S_TOKEN_CREDENTIALS = 'k8s-token'
+        IMAGE_NAME            = 'onose147/node-k8s-app'
     }
 
     stages {
@@ -17,7 +17,7 @@ pipeline {
                     branches: [[name: '*/master']],
                     userRemoteConfigs: [[
                         url: 'https://github.com/onose147/node-k8s-app.git',
-                        credentialsId: "${GITHUB_CREDENTIALS}"
+                        credentialsId: env.GITHUB_CREDENTIALS
                     ]]
                 ])
             }
@@ -25,26 +25,22 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                script {
-                    sh """
-                        docker build -t ${DOCKERHUB_REPO}:latest .
-                    """
-                }
+                sh """
+                    docker build -t ${IMAGE_NAME}:latest .
+                """
             }
         }
 
         stage('Push to Docker Hub') {
             steps {
-                withCredentials([
-                    usernamePassword(
-                        credentialsId: "${DOCKERHUB_CREDENTIALS}",
-                        usernameVariable: 'USER',
-                        passwordVariable: 'PASS'
-                    )
-                ]) {
+                withCredentials([usernamePassword(
+                    credentialsId: env.DOCKERHUB_CREDENTIALS,
+                    usernameVariable: 'USER',
+                    passwordVariable: 'PASS'
+                )]) {
                     sh """
-                        echo "$PASS" | docker login -u "$USER" --password-stdin
-                        docker push ${DOCKERHUB_REPO}:latest
+                        echo \$PASS | docker login -u \$USER --password-stdin
+                        docker push ${IMAGE_NAME}:latest
                     """
                 }
             }
@@ -52,16 +48,20 @@ pipeline {
 
         stage('Deploy to Kubernetes') {
             steps {
-                withCredentials([
-                    file(
-                        credentialsId: "${KUBECONFIG_CREDENTIALS}",
-                        variable: 'KUBECONFIG_FILE'
-                    )
-                ]) {
+                withCredentials([string(
+                    credentialsId: env.K8S_TOKEN_CREDENTIALS,
+                    variable: 'K8S_TOKEN'
+                )]) {
                     sh """
-                        export KUBECONFIG=$KUBECONFIG_FILE
-                        kubectl apply -f k8s/deployment.yaml
-                        kubectl apply -f k8s/service.yaml
+                        kubectl --token=\$K8S_TOKEN \
+                            --server=https://$(minikube ip):8443 \
+                            --insecure-skip-tls-verify=true \
+                            -n dev apply -f deployment.yml
+
+                        kubectl --token=\$K8S_TOKEN \
+                            --server=https://$(minikube ip):8443 \
+                            --insecure-skip-tls-verify=true \
+                            -n dev apply -f service.yml
                     """
                 }
             }
