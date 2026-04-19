@@ -46,8 +46,16 @@ pipeline {
             steps {
                 withCredentials([string(credentialsId: 'k8s-token', variable: 'K8S_TOKEN')]) {
                     sh """
-                        kubectl --token=\$K8S_TOKEN \
-                            --server=$K8S_SERVER \
+                        # Deploy MongoDB first
+                        kubectl --token=${K8S_TOKEN} \
+                            --server=${K8S_SERVER} \
+                            --insecure-skip-tls-verify=true \
+                            --validate=false \
+                            -n dev apply -f mongodb.yaml
+
+                        # Deploy Node.js app
+                        kubectl --token=${K8S_TOKEN} \
+                            --server=${K8S_SERVER} \
                             --insecure-skip-tls-verify=true \
                             --validate=false \
                             -n dev apply -f deployment.yml
